@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">Dharm</string>
+    <string name="app_name">Spiritual</string>
+
+    <string name="app_id_spiritual">ca-app-pub-2600650385542912~6546388826</string>
+
+    <string name="banner_ads_id">ca-app-pub-2600650385542912/9262513083</string>
+
+    <string name="interstitial_ad_id">ca-app-pub-2600650385542912/2561373366</string>
+
+    <string name="reward_ad_id">ca-app-pub-2600650385542912/1154261654</string>
 </resources>
