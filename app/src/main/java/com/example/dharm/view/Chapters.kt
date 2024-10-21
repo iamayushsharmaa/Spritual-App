@@ -1,6 +1,8 @@
 package com.example.dharm.view
 
 
+import android.app.Activity
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -32,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -42,9 +45,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dharm.R
+import com.example.dharm.view.ads.BannerAds
 import com.example.dharm.viewmodel.MainViewModel
-import dagger.Provides
-import kotlinx.coroutines.delay
+import com.example.foradsonly.ads.loadInterstitialAd
+import com.example.foradsonly.ads.showInterstitialAds
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,12 +56,10 @@ import kotlinx.coroutines.delay
 fun Chapters(navController: NavController, viewModel: MainViewModel){
 
     val chapters by viewModel.chapters.collectAsState(initial = emptyList())
-
     var isLoading by remember { mutableStateOf(true) }
 
 
     LaunchedEffect(key1 = true) {
-        delay(800)
         isLoading = false
     }
 
@@ -86,10 +88,13 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
             .padding(top = it.calculateTopPadding()),
         ){
             ImageVerse(navController)
+
+            BannerAds(modifier = Modifier.padding(vertical = 5.dp))
+
             Text(text = "Chapters",
                 fontSize = 29.sp,
                 fontWeight = FontWeight.ExtraBold,
-                modifier = Modifier.padding(start = 20.dp, top = 30.dp)
+                modifier = Modifier.padding(start = 20.dp, top = 25.dp)
             )
             LazyColumn(modifier = Modifier
                 .padding(12.dp)
@@ -127,6 +132,8 @@ fun ChapterList(
     verseCount: Int,
     viewModel: MainViewModel
 ){
+    val context = LocalContext.current
+    val activity = context as? Activity
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background,
@@ -145,7 +152,8 @@ fun ChapterList(
                     navController,
                     chapterSummary,
                     verseCount,
-                    viewModel
+                    viewModel,
+                    context
                 )
             },
         shape = RoundedCornerShape(8.dp),
@@ -176,15 +184,18 @@ fun ChapterList(
     }
 }
 
+
 fun onChapterClick(
     currentChapterNumber: Int,
     currentChapter: String,
     navController: NavController,
     chapterSummary: String,
     verseCount: Int,
-    viewModel: MainViewModel
+    viewModel: MainViewModel,
+    context: Context
 ) {
-    navController.navigate("Verse/$currentChapterNumber/$currentChapter/$chapterSummary/$verseCount")
+    loadInterstitialAd(context)
+    showInterstitialAds(context,navController,currentChapterNumber,currentChapter,chapterSummary,verseCount)
 }
 
 

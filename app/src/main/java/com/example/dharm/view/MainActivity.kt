@@ -5,7 +5,10 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -14,6 +17,11 @@ import androidx.navigation.navArgument
 import com.example.dharm.network.ChapterConnectivityStatus
 import com.example.dharm.ui.theme.DharmTheme
 import com.example.dharm.viewmodel.MainViewModel
+import com.example.dharm.viewmodel.SplashViewmodel
+import com.example.foradsonly.ads.addInterstitialCallbacks
+import com.example.foradsonly.ads.loadInterstitialAd
+import com.google.android.gms.ads.MobileAds
+import com.google.android.gms.ads.RequestConfiguration
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,17 +30,29 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private val viewmodel : SplashViewmodel by viewModels()
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        installSplashScreen().apply {
+            setKeepOnScreenCondition{
+                viewmodel.isLoading.value
+            }
+
+        }
+        MobileAds.initialize(this) {
+            loadInterstitialAd(this)
+        }
 
         setContent {
             DharmTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "Chapters") {
+//                    composable("splash"){
+//                        SplashScreen(navController = navController)
+//                    }
                     composable("Home") {
-
                         Home(navController)
                     }
                     composable("Chapters") {
