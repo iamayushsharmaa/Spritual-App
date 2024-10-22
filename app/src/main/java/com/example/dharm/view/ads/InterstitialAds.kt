@@ -52,6 +52,7 @@ fun addInterstitialCallbacks(
     interstitialAd?.let { ad ->
         ad.fullScreenContentCallback = object : FullScreenContentCallback() {
             override fun onAdDismissedFullScreenContent() {
+                Log.d("AdDismissed", "Interstitial ad dismissed")
                 // Navigate to the next screen after the ad is dismissed
                 navController.navigate("Verse/$currentChapterNumber/$currentChapter/$chapterSummary/$verseCount")
                 interstitialAd = null

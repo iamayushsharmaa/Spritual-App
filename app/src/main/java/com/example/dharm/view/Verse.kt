@@ -1,8 +1,11 @@
 package com.example.dharm.view
 
 
+import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +49,7 @@ import androidx.navigation.NavController
 import com.example.dharm.R
 import com.example.dharm.models.chapter.ChaptersItem
 import com.example.dharm.models.verse.VerseItem
+import com.example.dharm.view.ads.showRewardAds
 import com.example.dharm.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 
@@ -68,7 +73,7 @@ fun Verse(
     var isExpanded by remember { mutableStateOf(false) }
 
     LaunchedEffect(verses) {
-        isLoading = verses.isEmpty()
+       isLoading = verses.isEmpty()
     }
 
     Scaffold(
@@ -78,6 +83,7 @@ fun Verse(
                     Text(
                         text = "Srimad Bhagavad Gita",
                         fontSize = 29.sp,
+                        color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
                         fontWeight = FontWeight.ExtraBold,
@@ -89,11 +95,13 @@ fun Verse(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.background)
                 .padding(top = it.calculateTopPadding()),
         ) {
             Row {
                 Text(
                     text ="Chapter $chapterNumber",
+                    color = MaterialTheme.colorScheme.primary,
                     fontSize = 38.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier
@@ -109,8 +117,8 @@ fun Verse(
 //                      //  saveChapter(viewModel ,selectedChapter, verses)
 //                    }
                 }
-                    )
-                    {
+                )
+                {
                     Icon(painter = painterResource(id = R.drawable.unfilled_icon), contentDescription = "Save Chapter")
                 }
             }
@@ -118,6 +126,7 @@ fun Verse(
             Text(
                 text = chapterTitle,
                 fontSize = 29.sp,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -126,6 +135,7 @@ fun Verse(
             Text(text = chapterSummary,
                 fontWeight = FontWeight.Normal,
                 fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.primary,
                 maxLines = if (isExpanded) Int.MAX_VALUE else 3,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier
@@ -135,13 +145,14 @@ fun Verse(
             )
             Text(
                 text = if (isExpanded) "Read less" else "Read more...",
-                color = Color.Blue,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .padding(start = 14.dp, top = 5.dp)
                     .clickable { isExpanded = true },
             )
             Text(text = "$verseCount Verses",
                 fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 20.sp,
                 modifier = Modifier
                     .padding(start = 14.dp, top = 25.dp)
@@ -198,9 +209,10 @@ fun Verse(
 @Composable
 fun VerseList(verseNumber : Int, navController: NavController,chapterNumber: Int, viewModel: MainViewModel){
 
+    val context = LocalContext.current
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = MaterialTheme.colorScheme.secondary,
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
@@ -210,7 +222,7 @@ fun VerseList(verseNumber : Int, navController: NavController,chapterNumber: Int
             .padding(8.dp)
             .height(70.dp)
             .clickable {
-                onVerseClick(navController, chapterNumber, verseNumber, viewModel)
+                onVerseClick(navController, chapterNumber, verseNumber, viewModel,context)
             },
         shape = RoundedCornerShape(8.dp),
     ) {
@@ -221,7 +233,7 @@ fun VerseList(verseNumber : Int, navController: NavController,chapterNumber: Int
         ) {
             Text(
                 text = "Verse $verseNumber",
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(12.dp,15.dp)
@@ -230,7 +242,11 @@ fun VerseList(verseNumber : Int, navController: NavController,chapterNumber: Int
             Spacer(modifier = Modifier.weight(1f))
 
             Image(
-                painter = painterResource(id = R.drawable.next_btn),
+                painter = painterResource(id = if (isSystemInDarkTheme()) {
+                    R.drawable.next_btn_white // Replace with your dark mode icon resource
+                } else {
+                    R.drawable.next_btn
+                }),
                 contentDescription = "Next to Chapter",
                 modifier = Modifier
                     .size(50.dp)
@@ -245,7 +261,8 @@ fun onVerseClick(
     chapterNumber: Int,
     verseNumber: Int,
     viewModel: MainViewModel,
+    context: Context
 ) {
-    navController.navigate("VerseDetail/${chapterNumber}/${verseNumber}")
+   showRewardAds(context,navController,chapterNumber,verseNumber)
 }
 

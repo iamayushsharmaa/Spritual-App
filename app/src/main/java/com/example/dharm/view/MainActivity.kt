@@ -15,15 +15,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.dharm.network.ChapterConnectivityStatus
-import com.example.dharm.ui.theme.DharmTheme
+import com.example.dharm.ui.theme.SpiritualTheme
+import com.example.dharm.view.ads.loadRewardAd
 import com.example.dharm.viewmodel.MainViewModel
 import com.example.dharm.viewmodel.SplashViewmodel
-import com.example.foradsonly.ads.addInterstitialCallbacks
 import com.example.foradsonly.ads.loadInterstitialAd
 import com.google.android.gms.ads.MobileAds
-import com.google.android.gms.ads.RequestConfiguration
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 
@@ -43,10 +41,11 @@ class MainActivity : ComponentActivity() {
         }
         MobileAds.initialize(this) {
             loadInterstitialAd(this)
+            loadRewardAd(this)
         }
 
         setContent {
-            DharmTheme {
+            SpiritualTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "Chapters") {
 //                    composable("splash"){

@@ -42,6 +42,7 @@ import androidx.navigation.NavController
 import com.example.dharm.R
 import com.example.dharm.models.verse.Commentary
 import com.example.dharm.models.verse.Translation
+import com.example.dharm.view.ads.BannerAds
 import com.example.dharm.viewmodel.MainViewModel
 
 
@@ -53,13 +54,11 @@ fun VerseDetail(
     verseNumber: Int?,
     viewModel: MainViewModel
 ){
-
-
     LaunchedEffect(verseNumber) {
         viewModel.setVerseNumber(verseNumber!!)
     }
 
-    val verse by  viewModel.particularVerse.collectAsState(initial = null)
+    val verse by viewModel.particularVerse.collectAsState(initial = null)
 
     val listOfTranslations = verse?.translations?.filter { it.language == "english" } ?: emptyList()
     val listOfTranslationSize = listOfTranslations.size
@@ -74,6 +73,7 @@ fun VerseDetail(
                     Text(
                         text = "Srimad Bhagavad Gita",
                         fontSize = 29.sp,
+                        color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center,
                         modifier = Modifier
                             .fillMaxWidth()
@@ -87,59 +87,61 @@ fun VerseDetail(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(color = MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
                 .padding(top = it.calculateTopPadding())
         ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 15.dp, start = 15.dp, bottom = 10.dp, end = 15.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.unfilled_icon),
-                        contentDescription = "saveIcon"
-                    )
-                    Spacer(modifier = Modifier.width(10.dp))
-
-
-                    Text(
-                        text = "Verse $verseNumber",
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                verse?.let { it1 -> ShlokCard(it1.text) }
-
-                Text(
-                    text = "Translation",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(
-                        top = 15.dp,
-                        start = 10.dp,
-                        bottom = 8.dp,
-                        end = 10.dp
-                    ),
+            
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 15.dp, start = 15.dp, bottom = 10.dp, end = 15.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.unfilled_icon),
+                    contentDescription = "saveIcon"
                 )
-
-                TranslationCard(listOfTranslations)
-
+                Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = "Commentary",
-                    fontWeight = FontWeight.SemiBold,
+                    text = "Verse $verseNumber",
                     fontSize = 20.sp,
-                    modifier = Modifier.padding(
-                        top = 15.dp,
-                        start = 10.dp,
-                        bottom = 8.dp,
-                        end = 10.dp
-                    ),
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold
                 )
-                CommentaryCard(listOfCommentary)
+            }
 
+            verse?.let { it1 -> ShlokCard(it1.text) }
+            BannerAds(modifier = Modifier)
+            Text(
+                text = "Translation",
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.padding(
+                    top = 15.dp,
+                    start = 10.dp,
+                    bottom = 8.dp,
+                    end = 10.dp
+                ),
+            )
 
+            TranslationCard(listOfTranslations)
 
+            BannerAds(modifier = Modifier)
+            Text(
+                text = "Commentary",
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 20.sp,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(
+                    top = 15.dp,
+                    start = 10.dp,
+                    bottom = 8.dp,
+                    end = 10.dp
+                ),
+            )
+            CommentaryCard(listOfCommentary)
+            BannerAds(modifier = Modifier)
         }
     }
 }
@@ -162,7 +164,7 @@ fun ProgressBar(){
 fun ShlokCard(text: String) {
     Card (
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFEEEEEE),
+            containerColor = MaterialTheme.colorScheme.secondary,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 18.dp),
         modifier = Modifier
@@ -170,9 +172,10 @@ fun ShlokCard(text: String) {
         shape = RoundedCornerShape(10.dp)
     ){
 
-        Column (modifier = Modifier.background(color = Color(0xFFEEEEEE))){
+        Column (modifier = Modifier){
             Text(
                 text = text,
+                color = MaterialTheme.colorScheme.primary,
                 fontSize = 17.sp,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -194,7 +197,7 @@ fun TranslationCard(listOfTranslations: List<Translation>) {
 
     Card (
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFEEEEEE),
+            containerColor = MaterialTheme.colorScheme.secondary,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 18.dp),
         modifier = Modifier
@@ -203,36 +206,35 @@ fun TranslationCard(listOfTranslations: List<Translation>) {
         shape = RoundedCornerShape(10.dp)
     ){
         Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
+            modifier = Modifier.padding(16.dp)
+        ) {
 
-                listOfTranslations.forEachIndexed { index, translation ->
-                    if (isExpanded || index == 0) {
-                        Text(
-                            text = "Author: ${translation.author_name}",
-                            fontSize = 13.sp,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                        Text(
-                            text = translation.description,
-                            maxLines = if (isExpanded) Int.MAX_VALUE else 5,
-                            overflow = TextOverflow.Ellipsis,
-                            fontSize = 18.sp,
-                            modifier = Modifier
-                                .padding(bottom = 12.dp)
-                                .fillMaxWidth()
-                        )
-                    }
+            listOfTranslations.forEachIndexed { index, translation ->
+                if (isExpanded || index == 0) {
+                    Text(
+                        text = "Author: ${translation.author_name}",
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 13.sp,
+                        modifier = Modifier.padding(bottom = 4.dp)
+                    )
+                    Text(
+                        text = translation.description,
+                        color = MaterialTheme.colorScheme.primary,
+                        maxLines = if (isExpanded) Int.MAX_VALUE else 5,
+                        overflow = TextOverflow.Ellipsis,
+                        fontSize = 18.sp,
+                        modifier = Modifier
+                            .padding(bottom = 12.dp)
+                            .fillMaxWidth()
+                    )
                 }
-
-
-
+            }
             if (!isExpanded) {
-
                 Text(
                     text =
                     if (isExpanded)"Show less" else "Show more",
                     fontSize = 13.sp,
+                    color = MaterialTheme.colorScheme.primary,
                     textAlign = TextAlign.End,
                     modifier = Modifier
                         .padding(12.dp)
@@ -247,13 +249,11 @@ fun TranslationCard(listOfTranslations: List<Translation>) {
 
 @Composable
 fun CommentaryCard(listOfCommentary: List<Commentary>) {
-
-
     var isExpanded by remember { mutableStateOf(false) }
 
     Card (
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFEEEEEE),
+            containerColor = MaterialTheme.colorScheme.secondary,
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 18.dp),
         modifier = Modifier
@@ -261,25 +261,25 @@ fun CommentaryCard(listOfCommentary: List<Commentary>) {
             .padding(top = 10.dp, start = 10.dp, end = 10.dp, bottom = 15.dp),
         shape = RoundedCornerShape(10.dp)
     ){
-
-
         Column (modifier = Modifier
             .padding(10.dp)
-            .background(color = Color(0xFFEEEEEE))){
+        ){
 
             listOfCommentary.forEachIndexed { index, commentary ->
-                  Text(
-                        text = "Author : ${commentary.author_name} ",
-                        fontSize = 13.sp,
-                        modifier = Modifier.padding(9.dp)
-                  )
-                    Text(
-                        text = commentary.description,
-                        fontSize = 18.sp,
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .fillMaxWidth()
-                    )
+                Text(
+                    text = "Author : ${commentary.author_name} ",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(9.dp)
+                )
+                Text(
+                    text = commentary.description,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 18.sp,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .fillMaxWidth()
+                )
             }
         }
     }

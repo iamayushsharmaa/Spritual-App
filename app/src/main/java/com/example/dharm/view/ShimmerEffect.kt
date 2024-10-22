@@ -26,7 +26,6 @@ fun ShimmerListItem(
     contentAfterLoading: @Composable () -> Unit,
     modifier: Modifier = Modifier
 ) {
-
     if(isLoading){
         Card(
             colors = CardDefaults.cardColors(

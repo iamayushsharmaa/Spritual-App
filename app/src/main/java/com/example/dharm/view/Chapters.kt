@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -25,6 +26,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -33,7 +35,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -56,13 +57,11 @@ import com.example.foradsonly.ads.showInterstitialAds
 fun Chapters(navController: NavController, viewModel: MainViewModel){
 
     val chapters by viewModel.chapters.collectAsState(initial = emptyList())
-    var isLoading by remember { mutableStateOf(true) }
-
+    var isLoading by remember { mutableStateOf(false) }
 
     LaunchedEffect(key1 = true) {
         isLoading = false
     }
-
     Scaffold (
         topBar = {
             TopAppBar(
@@ -79,7 +78,11 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
                     IconButton(onClick = { navController.navigate("Saved")}) {
                         Icon(painter = painterResource(id = R.drawable.savefilled_icon), contentDescription = "Saved Verses")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.background
+
+                )
             )
         }
     ) {
@@ -93,6 +96,7 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
 
             Text(text = "Chapters",
                 fontSize = 29.sp,
+                color = MaterialTheme.colorScheme.primary ,
                 fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier.padding(start = 20.dp, top = 25.dp)
             )
@@ -133,10 +137,10 @@ fun ChapterList(
     viewModel: MainViewModel
 ){
     val context = LocalContext.current
-    val activity = context as? Activity
+
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background,
+            containerColor = MaterialTheme.colorScheme.secondary
         ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 8.dp
@@ -165,7 +169,7 @@ fun ChapterList(
         ) {
             Text(
                 text = "Chapter $number : $chapter",
-                color = Color.Black,
+                color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(start = 12.dp, top = 15.dp)
@@ -174,7 +178,11 @@ fun ChapterList(
             Spacer(modifier = Modifier.weight(1f))
 
             Image(
-                painter = painterResource(id = R.drawable.next_btn),
+                painter = painterResource(id = if (isSystemInDarkTheme()) {
+                    R.drawable.next_btn_white // Replace with your dark mode icon resource
+                } else {
+                    R.drawable.next_btn
+                }),
                 contentDescription = "Next to Chapter",
                 modifier = Modifier
                     .size(50.dp)
@@ -199,8 +207,9 @@ fun onChapterClick(
 }
 
 
+
 @Preview
 @Composable
 fun Okay() {
-    Chapters(navController = rememberNavController(), viewModel = viewModel())
+    ChapterList("Chapter ",1,navController = rememberNavController(),"okay",13,viewModel = viewModel())
 }
