@@ -1,4 +1,4 @@
-package com.example.dharm.view.ads
+package com.example.dharm.ads
 
 import android.app.Activity
 import android.content.Context

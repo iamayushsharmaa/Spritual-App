@@ -1,8 +1,8 @@
 package com.example.dharm.view
 
 
-import android.app.Activity
 import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -46,22 +46,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dharm.R
-import com.example.dharm.view.ads.BannerAds
+import com.example.dharm.ads.BannerAds
+import com.example.dharm.models.chapter.UiState
 import com.example.dharm.viewmodel.MainViewModel
 import com.example.foradsonly.ads.loadInterstitialAd
 import com.example.foradsonly.ads.showInterstitialAds
+import kotlin.random.Random
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Chapters(navController: NavController, viewModel: MainViewModel){
 
-    val chapters by viewModel.chapters.collectAsState(initial = emptyList())
-    var isLoading by remember { mutableStateOf(false) }
+    val chapters by viewModel.chapters.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(key1 = true) {
-        isLoading = false
-    }
     Scaffold (
         topBar = {
             TopAppBar(
@@ -81,7 +80,6 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background
-
                 )
             )
         }
@@ -90,7 +88,7 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
             .fillMaxSize()
             .padding(top = it.calculateTopPadding()),
         ){
-            ImageVerse(navController)
+            ImageVerse(navController,viewModel)
 
             BannerAds(modifier = Modifier.padding(vertical = 5.dp))
 
@@ -100,14 +98,29 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
                 fontWeight = FontWeight.ExtraBold,
                 modifier = Modifier.padding(start = 20.dp, top = 25.dp)
             )
-            LazyColumn(modifier = Modifier
-                .padding(12.dp)
-                .fillMaxSize()
-            ) {
-                items(chapters){ chapter->
-                    ShimmerListItem(
-                        isLoading = isLoading,
-                        contentAfterLoading = {
+
+            when (uiState) {
+                is UiState.Loading -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .fillMaxSize()
+                    ) {
+                        items(6){
+                            ShimmerListItem(
+                                isLoading = true,
+                                contentAfterLoading = {},
+                            )
+                        }
+                    }
+                }
+                is UiState.Success -> {
+                    LazyColumn (
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .fillMaxSize()
+                    ){
+                        items(chapters){ chapter->
                             ChapterList(
                                 chapter = chapter.name_translated,
                                 number = chapter.chapter_number,
@@ -116,11 +129,12 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
                                 verseCount = chapter.verses_count,
                                 viewModel = viewModel
                             )
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(20.dp)
-                    )
+
+                        }
+                    }
+                }
+                is UiState.Error -> {
+                    Text(text = (uiState as UiState.Error).message)
                 }
             }
         }
@@ -192,7 +206,6 @@ fun ChapterList(
     }
 }
 
-
 fun onChapterClick(
     currentChapterNumber: Int,
     currentChapter: String,
@@ -205,8 +218,6 @@ fun onChapterClick(
     loadInterstitialAd(context)
     showInterstitialAds(context,navController,currentChapterNumber,currentChapter,chapterSummary,verseCount)
 }
-
-
 
 @Preview
 @Composable

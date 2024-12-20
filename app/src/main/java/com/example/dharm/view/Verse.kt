@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,7 +37,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -43,16 +44,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.LifecycleCoroutineScope
-import androidx.lifecycle.findViewTreeLifecycleOwner
 import androidx.navigation.NavController
 import com.example.dharm.R
-import com.example.dharm.models.chapter.ChaptersItem
-import com.example.dharm.models.verse.VerseItem
-import com.example.dharm.view.ads.showRewardAds
+import com.example.dharm.ads.showRewardAds
+import com.example.dharm.models.chapter.UiState
 import com.example.dharm.viewmodel.MainViewModel
-import kotlinx.coroutines.delay
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,16 +61,12 @@ fun Verse(
     verseCount: String,
 ) {
     LaunchedEffect(chapterNumber) {
-        viewModel.setChapterNumber(chapterNumber)
+        viewModel.fetchVerses(chapterNumber)
     }
 
-    val verses by viewModel.verses.collectAsState(initial = emptyList())
-    var isLoading by remember { mutableStateOf(true) }
+    val verses by viewModel.allVerses.collectAsState()
     var isExpanded by remember { mutableStateOf(false) }
-
-    LaunchedEffect(verses) {
-       isLoading = verses.isEmpty()
-    }
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -96,84 +88,111 @@ fun Verse(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.background)
-                .padding(top = it.calculateTopPadding()),
+                .padding(top = it.calculateTopPadding())
         ) {
-            Row {
-                Text(
-                    text ="Chapter $chapterNumber",
-                    color = MaterialTheme.colorScheme.primary,
-                    fontSize = 38.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 14.dp, top = 5.dp, bottom = 9.dp)
-                )
-
-                Spacer(modifier = Modifier.width(180.dp))
-
-                IconButton(onClick = {
-//                    val selectedChapter = chapters.find { it.chapter_number == chapterNumber }
-//                    if (selectedChapter != null) {
-//                      //  saveChapter(viewModel ,selectedChapter, verses)
-//                    }
-                }
-                )
-                {
-                    Icon(painter = painterResource(id = R.drawable.unfilled_icon), contentDescription = "Save Chapter")
-                }
-            }
-
-            Text(
-                text = chapterTitle,
-                fontSize = 29.sp,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold,
+            LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 14.dp, top = 5.dp)
-            )
-            Text(text = chapterSummary,
-                fontWeight = FontWeight.Normal,
-                fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.primary,
-                maxLines = if (isExpanded) Int.MAX_VALUE else 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .padding(start = 14.dp, top = 7.dp, end = 16.dp)
-                    .fillMaxWidth()
-                ,
-            )
-            Text(
-                text = if (isExpanded) "Read less" else "Read more...",
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(start = 14.dp, top = 5.dp)
-                    .clickable { isExpanded = true },
-            )
-            Text(text = "$verseCount Verses",
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 20.sp,
-                modifier = Modifier
-                    .padding(start = 14.dp, top = 25.dp)
-                    .fillMaxWidth()
-                    .clickable { },)
-
-            // List of verses
-            LazyColumn(modifier = Modifier
-                .padding(12.dp)
-                .fillMaxSize()
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.background) // Adjust padding if needed
             ) {
-                items(verses) { verseItem ->
-                    ShimmerListItem(
-                        isLoading = isLoading,
-                        contentAfterLoading = {
-                            VerseList(verseItem.verse_number, navController = navController , chapterNumber, viewModel)
-                        },
+                item {
+                    Row {
+                        Text(
+                            text ="Chapter $chapterNumber",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 38.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 14.dp, top = 5.dp, bottom = 9.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(180.dp))
+
+                        IconButton(
+                            onClick = { }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.unfilled_icon),
+                                contentDescription = "Save Chapter"
+                            )
+                        }
+                    }
+
+                    Text(
+                        text = chapterTitle,
+                        fontSize = 29.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(20.dp)
+                            .padding(start = 14.dp, top = 5.dp)
                     )
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        // Main text content
+                        Text(
+                            text = chapterSummary,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 17.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = if (isExpanded) Int.MAX_VALUE else 3,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier
+                                .padding(start = 14.dp, top = 7.dp, end = 16.dp)
+                                .fillMaxWidth(),
+                        )
+
+                        // Toggle button
+                        Text(
+                            text = if (isExpanded) "Read less" else "Read more...",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .padding(start = 14.dp, top = 5.dp)
+                                .clickable { isExpanded = !isExpanded }, // Toggle the state
+                        )
+                    }
+                    Text(text = "$verseCount Verses",
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontSize = 20.sp,
+                        modifier = Modifier
+                            .padding(start = 14.dp, top = 25.dp)
+                            .fillMaxWidth()
+                            .clickable { }
+
+                    )
+                }
+
+                when (uiState) {
+                    is UiState.Loading -> {
+                            items(6){
+                                ShimmerListItem(
+                                    isLoading = true,
+                                    contentAfterLoading = {},
+                                )
+                            }
+                    }
+                    is UiState.Success -> {
+                            items(verses){ verseItem->
+                                VerseList(
+                                    verseItem.verse_number,
+                                    navController,
+                                    chapterNumber,
+                                    viewModel
+                                )
+
+
+                            }
+                        }
+                    is UiState.Error -> {
+                        item {
+                            Text(text = (uiState as UiState.Error).message)
+                        }                    }
                 }
             }
         }
@@ -197,17 +216,13 @@ fun Verse(
 //    viewModel.insertChapters(savedChapters)
 //}
 
-
-//fun readMore() {
-//    val isExpanded  = false
-//    if(!isExpanded){
-//
-//    }
-//}
-
-
 @Composable
-fun VerseList(verseNumber : Int, navController: NavController,chapterNumber: Int, viewModel: MainViewModel){
+fun VerseList(
+    verseNumber : Int,
+    navController: NavController,
+    chapterNumber: Int,
+    viewModel: MainViewModel
+){
 
     val context = LocalContext.current
     Card(

@@ -13,13 +13,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,16 +36,16 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dharm.R
 import com.example.dharm.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
-
+import kotlin.random.Random
 
 
 @Preview
@@ -76,7 +80,7 @@ fun Home(navController:NavController, ){
             .padding(top = it.calculateTopPadding())
             ){
 
-          ImageVerse(navController)
+
           Books(navController)
 
         }
@@ -85,12 +89,26 @@ fun Home(navController:NavController, ){
 
 
 @Composable
-fun ImageVerse(navController: NavController){
+fun ImageVerse(navController: NavController,viewModel: MainViewModel){
+
+
+    val chapterNumber = remember { mutableStateOf(1) }
+
+    LaunchedEffect(Unit) {
+
+        chapterNumber.value = Random.nextInt(1,19)
+        val verseNumber = Random.nextInt(1,21)
+    }
+    val verse by viewModel.verse.collectAsState(initial = null)
+    val listOfTranslations = verse?.translations?.filter { it.language == "english" } ?: emptyList()
+
     Card (modifier = Modifier
         .width(400.dp)
         .height(200.dp)
         .padding(13.dp)
         ) {
+
+
         Box(modifier = Modifier.fillMaxSize()){
             Image(painter = painterResource(id = R.drawable.bhagwatgeetakrishnaimage),
                 contentDescription ="firstImage",
@@ -103,7 +121,9 @@ fun ImageVerse(navController: NavController){
             )
             Column (modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(12.dp, 12.dp, 0.dp, 0.dp)){
+                .verticalScroll(rememberScrollState())
+                .padding(12.dp, 12.dp, 0.dp, 0.dp)
+            ){
                 Text(
                     text = "Verse of the day",
                     fontSize = 20.sp,
@@ -114,18 +134,26 @@ fun ImageVerse(navController: NavController){
                             alpha = 1.0f // Adjust the alpha value to set transparency (0.0f to 1.0f)
                         }
                 )
-                Text(
-                    text = "Jai shree ram ji ki",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White,
-                    modifier = Modifier
-                        .padding(0.dp, 10.dp, 0.dp, 0.dp)
-                        .graphicsLayer {
-                            alpha =
-                                1.0f // Adjust the alpha value to set transparency (0.0f to 1.0f)
-                        }
-                )
+                listOfTranslations.forEachIndexed { index, translation ->
+                    if (index == 0 ) {
+                        Text(
+                            text = "Author: ${translation.author_name}",
+                            color = MaterialTheme.colorScheme.primary,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        Text(
+                            text = translation.description,
+                            color = MaterialTheme.colorScheme.primary,
+                            maxLines = 5,
+                            overflow = TextOverflow.Ellipsis,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .padding(bottom = 12.dp)
+                                .fillMaxWidth()
+                        )
+                    }
+                }
             }
         }
 

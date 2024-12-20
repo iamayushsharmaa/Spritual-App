@@ -1,4 +1,4 @@
-package com.example.dharm.view.ads
+package com.example.dharm.ads
 
 import android.content.Context
 import android.util.Log
@@ -22,7 +22,7 @@ fun loadRewardAd(context: Context){
         }
         override fun onAdLoaded(ad: RewardedAd) {
             super.onAdLoaded(ad)
-            rewardAd= ad
+            rewardAd = ad
             Log.d("adLoaded", "onAdLoaded: Ad loaded successfully ")
         }
     } )

@@ -16,7 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.dharm.network.ChapterConnectivityStatus
 import com.example.dharm.ui.theme.SpiritualTheme
-import com.example.dharm.view.ads.loadRewardAd
+import com.example.dharm.ads.loadRewardAd
 import com.example.dharm.viewmodel.MainViewModel
 import com.example.dharm.viewmodel.SplashViewmodel
 import com.example.foradsonly.ads.loadInterstitialAd
@@ -37,13 +37,11 @@ class MainActivity : ComponentActivity() {
             setKeepOnScreenCondition{
                 viewmodel.isLoading.value
             }
-
         }
         MobileAds.initialize(this) {
             loadInterstitialAd(this)
             loadRewardAd(this)
         }
-
         setContent {
             SpiritualTheme {
                 val navController = rememberNavController()

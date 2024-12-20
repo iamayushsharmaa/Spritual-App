@@ -1,8 +1,10 @@
 package com.example.dharm.view
 
+import android.widget.ProgressBar
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +12,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -42,8 +46,10 @@ import androidx.navigation.NavController
 import com.example.dharm.R
 import com.example.dharm.models.verse.Commentary
 import com.example.dharm.models.verse.Translation
-import com.example.dharm.view.ads.BannerAds
+import com.example.dharm.ads.BannerAds
+import com.example.dharm.models.chapter.UiState
 import com.example.dharm.viewmodel.MainViewModel
+import kotlin.random.Random
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,10 +61,11 @@ fun VerseDetail(
     viewModel: MainViewModel
 ){
     LaunchedEffect(verseNumber) {
-        viewModel.setVerseNumber(verseNumber!!)
+        viewModel.fetchParticularVerse(chapterNumber!!,verseNumber!!)
     }
 
-    val verse by viewModel.particularVerse.collectAsState(initial = null)
+    val verse by viewModel.verse.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
 
     val listOfTranslations = verse?.translations?.filter { it.language == "english" } ?: emptyList()
     val listOfTranslationSize = listOfTranslations.size
@@ -91,70 +98,87 @@ fun VerseDetail(
                 .verticalScroll(rememberScrollState())
                 .padding(top = it.calculateTopPadding())
         ) {
-            
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 15.dp, start = 15.dp, bottom = 10.dp, end = 15.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.unfilled_icon),
-                    contentDescription = "saveIcon"
-                )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "Verse $verseNumber",
-                    fontSize = 20.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold
-                )
+
+            when (uiState) {
+                is UiState.Loading -> {
+                   Box(
+                       modifier = Modifier
+                           .fillMaxSize()
+                           .padding(30.dp),
+                       contentAlignment = Alignment.Center
+                   ) {
+                       ProgressBar()
+                   }
+                }
+                is UiState.Success -> {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 15.dp, start = 15.dp, bottom = 10.dp, end = 15.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.unfilled_icon),
+                            contentDescription = "saveIcon"
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "Verse $verseNumber",
+                            fontSize = 20.sp,
+                            color = MaterialTheme.colorScheme.primary,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                    }
+
+                    verse?.let { it1 -> ShlokCard(it1.text) }
+
+                    BannerAds(modifier = Modifier)
+                    Text(
+                        text = "Translation",
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(
+                            top = 15.dp,
+                            start = 10.dp,
+                            bottom = 8.dp,
+                            end = 10.dp
+                        ),
+                    )
+
+                    TranslationCard(listOfTranslations)
+
+                    BannerAds(modifier = Modifier)
+                    Text(
+                        text = "Commentary",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(
+                            top = 15.dp,
+                            start = 10.dp,
+                            bottom = 8.dp,
+                            end = 10.dp
+                        ),
+                    )
+                    CommentaryCard(listOfCommentary)
+                    BannerAds(modifier = Modifier)
+                }
+                is UiState.Error -> {
+                    Text(text = (uiState as UiState.Error).message)
+                }
             }
-
-            verse?.let { it1 -> ShlokCard(it1.text) }
-            BannerAds(modifier = Modifier)
-            Text(
-                text = "Translation",
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.primary,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(
-                    top = 15.dp,
-                    start = 10.dp,
-                    bottom = 8.dp,
-                    end = 10.dp
-                ),
-            )
-
-            TranslationCard(listOfTranslations)
-
-            BannerAds(modifier = Modifier)
-            Text(
-                text = "Commentary",
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 20.sp,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.padding(
-                    top = 15.dp,
-                    start = 10.dp,
-                    bottom = 8.dp,
-                    end = 10.dp
-                ),
-            )
-            CommentaryCard(listOfCommentary)
-            BannerAds(modifier = Modifier)
         }
     }
 }
-
 @Composable
 fun ProgressBar(){
     Box(modifier = Modifier
         .fillMaxSize()
         .background(color = Color.White),
-
-        contentAlignment = Alignment.Center){
+        contentAlignment = Alignment.Center
+    ){
         CircularProgressIndicator(
-            modifier = Modifier.width(64.dp),
+            modifier = Modifier.width(50.dp),
             color = MaterialTheme.colorScheme.secondary,
             trackColor = MaterialTheme.colorScheme.surfaceVariant,
         )

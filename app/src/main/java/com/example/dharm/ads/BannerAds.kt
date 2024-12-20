@@ -1,4 +1,4 @@
-package com.example.dharm.view.ads
+package com.example.dharm.ads
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable

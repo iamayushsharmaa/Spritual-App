@@ -4,7 +4,7 @@ package com.example.foradsonly.ads
 import android.content.Context
 import android.util.Log
 import androidx.navigation.NavController
-import com.example.dharm.view.ads.findActivity
+import com.example.dharm.ads.findActivity
 import com.google.android.gms.ads.AdError
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.FullScreenContentCallback
