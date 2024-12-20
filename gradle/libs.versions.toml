@@ -3,11 +3,8 @@ agp = "8.5.2"
 converterGson = "2.10.0"
 coreSplashscreen = "1.0.1"
 gson = "2.10.1"
-hiltAndroid = "2.45"
-hiltCompiler = "1.2.0"
-hiltLifecycleViewmodel = "1.0.0-alpha03"
 hiltNavigationCompose = "1.2.0"
-kotlin = "1.9.23"
+kotlin = "2.0.21"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -59,6 +56,6 @@ androidx-ui-android = { group = "androidx.compose.ui", name = "ui-android", vers
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 google-dagger-hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
 
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

@@ -91,13 +91,12 @@ fun Home(navController:NavController, ){
 @Composable
 fun ImageVerse(navController: NavController,viewModel: MainViewModel){
 
-
     val chapterNumber = remember { mutableStateOf(1) }
 
     LaunchedEffect(Unit) {
-
         chapterNumber.value = Random.nextInt(1,19)
         val verseNumber = Random.nextInt(1,21)
+        viewModel.fetchParticularVerse(chapterNumber.value,verseNumber)
     }
     val verse by viewModel.verse.collectAsState(initial = null)
     val listOfTranslations = verse?.translations?.filter { it.language == "english" } ?: emptyList()
@@ -106,9 +105,7 @@ fun ImageVerse(navController: NavController,viewModel: MainViewModel){
         .width(400.dp)
         .height(200.dp)
         .padding(13.dp)
-        ) {
-
-
+    ) {
         Box(modifier = Modifier.fillMaxSize()){
             Image(painter = painterResource(id = R.drawable.bhagwatgeetakrishnaimage),
                 contentDescription ="firstImage",
@@ -147,9 +144,9 @@ fun ImageVerse(navController: NavController,viewModel: MainViewModel){
                             color = MaterialTheme.colorScheme.primary,
                             maxLines = 5,
                             overflow = TextOverflow.Ellipsis,
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
                             modifier = Modifier
-                                .padding(bottom = 12.dp)
+                                .padding(bottom = 12.dp, end = 5.dp)
                                 .fillMaxWidth()
                         )
                     }

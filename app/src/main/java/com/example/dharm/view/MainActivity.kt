@@ -44,13 +44,9 @@ class MainActivity : ComponentActivity() {
             loadRewardAd(this)
         }
         setContent {
-
             SpiritualTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "Chapters") {
-//                    composable("splash"){
-//                        SplashScreen(navController = navController)
-//                    }
                     composable("Home") {
                         Home(navController)
                     }
@@ -65,7 +61,6 @@ class MainActivity : ComponentActivity() {
                             navArgument("chapterSummary") { type = NavType.StringType })
 
                     ) { backStackEntry ->
-
                         val viewModel = hiltViewModel<MainViewModel>()
                             val chapterNumber = backStackEntry.arguments?.getInt("chapterNumber") ?: -1
                             val chapterTitle = backStackEntry.arguments?.getString("chapterTitle") ?: ""
@@ -75,7 +70,6 @@ class MainActivity : ComponentActivity() {
                         if (chapterNumber != -1) {
                             Verse(navController, chapterNumber, chapterTitle, chapterSummary, viewModel, verseCount)
                         } else {
-                            // Handle the error case where the chapter number is invalid
                             Log.e("verse", "Invalid chapter number: $chapterNumber")
                         }
                     }
@@ -86,7 +80,6 @@ class MainActivity : ComponentActivity() {
                             navArgument("verseNumber") { type = NavType.IntType }
                         )
                     ) { backStackEntry ->
-
                         val viewModel = hiltViewModel<MainViewModel>()
                         val chapterNumber = backStackEntry.arguments?.getInt("chapterNumber") ?: -1
                         val verseNumber = backStackEntry.arguments?.getInt("verseNumber") ?: -1
@@ -94,13 +87,9 @@ class MainActivity : ComponentActivity() {
                         if (chapterNumber != -1 && verseNumber != -1) {
                             VerseDetail(navController, chapterNumber, verseNumber, viewModel)
                         } else {
-                            // Handle the error case where the chapter number is invalid
                             Log.e("verse", "Invalid verse number: $chapterNumber : $verseNumber")
                         }
                     }
-//                    composable("Saved") {
-//                        SaveChapterAndVerse(navController)
-//                    }
                 }
             }
         }

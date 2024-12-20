@@ -1,10 +1,9 @@
 package com.example.dharm.view
 
-import android.widget.ProgressBar
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -49,8 +46,6 @@ import com.example.dharm.models.verse.Translation
 import com.example.dharm.ads.BannerAds
 import com.example.dharm.models.chapter.UiState
 import com.example.dharm.viewmodel.MainViewModel
-import kotlin.random.Random
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,7 +58,6 @@ fun VerseDetail(
     LaunchedEffect(verseNumber) {
         viewModel.fetchParticularVerse(chapterNumber!!,verseNumber!!)
     }
-
     val verse by viewModel.verse.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
