@@ -174,7 +174,7 @@ fun VerseDetail(
 fun ProgressBar(){
     Box(modifier = Modifier
         .fillMaxSize()
-        .background(color = Color.White),
+        .background(color = Color.Transparent),
         contentAlignment = Alignment.Center
     ){
         CircularProgressIndicator(

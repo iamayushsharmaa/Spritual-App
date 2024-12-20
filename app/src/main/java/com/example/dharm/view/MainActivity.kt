@@ -2,6 +2,7 @@ package com.example.dharm.view
 
 import android.os.Bundle
 import android.util.Log
+import android.view.Window
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity() {
             loadRewardAd(this)
         }
         setContent {
+
             SpiritualTheme {
                 val navController = rememberNavController()
                 NavHost(navController = navController, startDestination = "Chapters") {
