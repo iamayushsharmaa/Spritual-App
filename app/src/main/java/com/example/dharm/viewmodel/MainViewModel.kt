@@ -17,23 +17,21 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: ChapterRepository
 ) : ViewModel() {
 
-    private val _chapters = MutableStateFlow<List<ChaptersItem>>(emptyList())
-    val chapters: StateFlow<List<ChaptersItem>> = _chapters.asStateFlow()
+    private val _chaptersUiState = MutableStateFlow<UiState<List<ChaptersItem>>>(UiState.Loading)
+    val chaptersUiState: StateFlow<UiState<List<ChaptersItem>>> = _chaptersUiState.asStateFlow()
 
-    private val _allVerses = MutableStateFlow<List<VerseItem>>(emptyList())
-    val allVerses: StateFlow<List<VerseItem>> = _allVerses.asStateFlow()
+    private val _allVersesUiState = MutableStateFlow<UiState<List<VerseItem>>>(UiState.Loading)
+    val allVersesUiState: StateFlow<UiState<List<VerseItem>>> = _allVersesUiState.asStateFlow()
 
-    private val _verse = MutableStateFlow<VerseItem?>(null)
-    val verse: StateFlow<VerseItem?> = _verse.asStateFlow()
+    private val _verseUiState = MutableStateFlow<UiState<VerseItem?>>(UiState.Success(null))
+    val verseUiState: StateFlow<UiState<VerseItem?>> = _verseUiState.asStateFlow()
 
-    private val _uiState = MutableStateFlow<UiState>(UiState.Loading)
-    val uiState: StateFlow<UiState> = _uiState.asStateFlow()
+    private var lastFetchedChapter: Int? = null
 
     init {
         fetchChapters()
@@ -44,35 +42,45 @@ class MainViewModel @Inject constructor(
             repository.getAllChapters().collect { result ->
                 when (result) {
                     is Resource.Success -> {
-                        _chapters.value = result.data
-                        _uiState.value = UiState.Success
+                        _chaptersUiState.value = UiState.Success(result.data ?: emptyList())
                     }
+
                     is Resource.Error -> {
-                        _uiState.value =
-                            UiState.Error(result.exception.message ?: "An error occurred")
+                        _chaptersUiState.value = UiState.Error(
+                            result.exception ?: Exception("Failed to fetch chapters")
+                        )
                     }
+
                     Resource.Loading -> {
-                        _uiState.value = UiState.Loading
+                        _chaptersUiState.value = UiState.Loading
                     }
                 }
             }
         }
     }
+
     fun fetchVerses(chapterNumber: Int) {
+        if (lastFetchedChapter == chapterNumber && _allVersesUiState.value is UiState.Success) {
+            return
+        }
+
         viewModelScope.launch {
             repository.getAllverses(chapterNumber).collect { result ->
                 when (result) {
                     is Resource.Success -> {
-                        _allVerses.value = result.data
-                        _uiState.value = UiState.Success
+                        val verses = result.data ?: emptyList()
+                        _allVersesUiState.value = UiState.Success(verses)
+                        lastFetchedChapter = chapterNumber
                     }
 
                     is Resource.Error -> {
-                        _uiState.value =
-                            UiState.Error(result.exception.message ?: "An error occurred")
+                        _allVersesUiState.value = UiState.Error(
+                            result.exception ?: Exception("Failed to fetch verses")
+                        )
                     }
+
                     Resource.Loading -> {
-                        _uiState.value = UiState.Loading
+                        _allVersesUiState.value = UiState.Loading
                     }
                 }
             }
@@ -84,15 +92,15 @@ class MainViewModel @Inject constructor(
             repository.getParticularVerse(chapterNumber, verseNumber).collect { result ->
                 when (result) {
                     is Resource.Success -> {
-                        _verse.value = result.data
-                        _uiState.value = UiState.Success
+                        _verseUiState.value = UiState.Success(result.data)
                     }
                     is Resource.Error -> {
-                        _uiState.value =
-                            UiState.Error(result.exception.message ?: "An error occurred")
+                        _verseUiState.value = UiState.Error(
+                            result.exception ?: Exception("Failed to fetch verse")
+                        )
                     }
                     Resource.Loading -> {
-                        _uiState.value = UiState.Loading
+                        _verseUiState.value = UiState.Loading
                     }
                 }
             }

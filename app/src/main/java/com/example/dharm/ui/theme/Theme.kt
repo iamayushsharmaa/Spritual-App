@@ -9,8 +9,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 
-
-
 private val LightColors = lightColorScheme(
     primary = Color(0xFF000000),
     onPrimary = Color.White,
@@ -30,7 +28,7 @@ private val DarkColors = darkColorScheme(
 )
 @Composable
 fun SpiritualTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(), // Use system dark mode setting by default
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
     val colors = if (darkTheme) DarkColors else LightColors

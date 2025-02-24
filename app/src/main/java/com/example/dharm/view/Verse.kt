@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.dharm.R
 import com.example.dharm.ads.showRewardAds
@@ -57,16 +58,16 @@ fun Verse(
     chapterNumber: Int,
     chapterTitle: String,
     chapterSummary: String,
-    viewModel: MainViewModel,
     verseCount: String,
+    viewModel: MainViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val verses by viewModel.allVersesUiState.collectAsState()
+    var isExpanded by remember { mutableStateOf(false) }
+
     LaunchedEffect(chapterNumber) {
         viewModel.fetchVerses(chapterNumber)
     }
-
-    val verses by viewModel.allVerses.collectAsState()
-    var isExpanded by remember { mutableStateOf(false) }
-    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -74,7 +75,7 @@ fun Verse(
                 title = {
                     Text(
                         text = "Srimad Bhagavad Gita",
-                        fontSize = 29.sp,
+                        fontSize = 26.sp,
                         color = MaterialTheme.colorScheme.primary,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.fillMaxWidth(),
@@ -82,21 +83,26 @@ fun Verse(
                     )
                 }
             )
-        }
+        },
+        modifier = Modifier.fillMaxSize()
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = MaterialTheme.colorScheme.background)
-                .padding(top = it.calculateTopPadding())
+                .padding(it)
         ) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(color = MaterialTheme.colorScheme.background) // Adjust padding if needed
+                    .padding(horizontal = 16.dp)
+                    .background(color = MaterialTheme.colorScheme.background)
             ) {
                 item {
-                    Row {
+                    Row (
+                        modifier = Modifier
+                            .fillMaxWidth()
+                    ){
                         Text(
                             text ="Chapter $chapterNumber",
                             color = MaterialTheme.colorScheme.primary,
@@ -104,7 +110,7 @@ fun Verse(
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 14.dp, top = 5.dp, bottom = 9.dp)
+                                .padding(top = 6.dp)
                         )
 
                         Spacer(modifier = Modifier.width(180.dp))
@@ -114,6 +120,7 @@ fun Verse(
                         ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.unfilled_icon),
+                                tint = MaterialTheme.colorScheme.primary,
                                 contentDescription = "Save Chapter"
                             )
                         }
@@ -121,19 +128,18 @@ fun Verse(
 
                     Text(
                         text = chapterTitle,
-                        fontSize = 29.sp,
+                        fontSize = 26.sp,
                         color = MaterialTheme.colorScheme.primary,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 14.dp, top = 5.dp)
+                            .padding(top = 5.dp)
                     )
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(8.dp)
+                            .padding(vertical = 4.dp)
                     ) {
-                        // Main text content
                         Text(
                             text = chapterSummary,
                             fontWeight = FontWeight.Normal,
@@ -142,18 +148,18 @@ fun Verse(
                             maxLines = if (isExpanded) Int.MAX_VALUE else 3,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
-                                .padding(start = 14.dp, top = 7.dp, end = 16.dp)
-                                .fillMaxWidth(),
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp)
+
                         )
 
-                        // Toggle button
                         Text(
                             text = if (isExpanded) "Read less" else "Read more...",
                             color = MaterialTheme.colorScheme.primary,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier
-                                .padding(start = 14.dp, top = 5.dp)
-                                .clickable { isExpanded = !isExpanded }, // Toggle the state
+                                .padding(top = 4.dp)
+                                .clickable { isExpanded = !isExpanded },
                         )
                     }
                     Text(text = "$verseCount Verses",
@@ -161,14 +167,12 @@ fun Verse(
                         color = MaterialTheme.colorScheme.primary,
                         fontSize = 20.sp,
                         modifier = Modifier
-                            .padding(start = 14.dp, top = 25.dp)
                             .fillMaxWidth()
-                            .clickable { }
-
+                            .padding(top = 25.dp)
                     )
                 }
 
-                when (uiState) {
+                when (verses) {
                     is UiState.Loading -> {
                             items(6){
                                 ShimmerListItem(
@@ -178,12 +182,13 @@ fun Verse(
                             }
                     }
                     is UiState.Success -> {
-                            items(verses){ verseItem->
+                        val allVerses = (verses as UiState.Success).data
+                            items(allVerses){ verseItem->
                                 VerseList(
-                                    verseItem.verse_number,
-                                    navController,
-                                    chapterNumber,
-                                    viewModel
+                                    verseNumber = verseItem.verse_number,
+                                    onVerseClick = {
+                                        showRewardAds(context, navController, chapterNumber,verseItem.verse_number)
+                                    }
                                 )
 
 
@@ -191,8 +196,9 @@ fun Verse(
                         }
                     is UiState.Error -> {
                         item {
-                            Text(text = (uiState as UiState.Error).message)
-                        }                    }
+                            Text(text = "Failed to fetch verses")
+                        }
+                    }
                 }
             }
         }
@@ -218,10 +224,8 @@ fun Verse(
 
 @Composable
 fun VerseList(
-    verseNumber : Int,
-    navController: NavController,
-    chapterNumber: Int,
-    viewModel: MainViewModel
+    verseNumber: Int,
+    onVerseClick: () -> Unit
 ){
 
     val context = LocalContext.current
@@ -234,10 +238,10 @@ fun VerseList(
         ),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(vertical = 7.dp)
             .height(70.dp)
             .clickable {
-                onVerseClick(navController, chapterNumber, verseNumber, viewModel,context)
+                onVerseClick()
             },
         shape = RoundedCornerShape(8.dp),
     ) {
@@ -250,7 +254,7 @@ fun VerseList(
                 text = "Verse $verseNumber",
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 modifier = Modifier.padding(12.dp,15.dp)
             )
 
@@ -269,15 +273,5 @@ fun VerseList(
             )
         }
     }
-}
-
-fun onVerseClick(
-    navController: NavController,
-    chapterNumber: Int,
-    verseNumber: Int,
-    viewModel: MainViewModel,
-    context: Context
-) {
-   showRewardAds(context,navController,chapterNumber,verseNumber)
 }
 

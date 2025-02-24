@@ -11,14 +11,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 
 @ExperimentalCoroutinesApi
 @Composable
-fun ChapterConnectivityStatus(navController: NavController, viewModel: MainViewModel) {
-    // This will cause re-composition on every network state change
+fun ChapterConnectivityStatus(navController: NavController) {
     val connection by connectivityState()
 
     val isConnected = connection === ConnectionState.Available
 
     if (isConnected) {
-        Chapters(navController,viewModel)
+        Chapters(navController)
     } else {
         NoInternetScreen()
     }

@@ -45,7 +45,7 @@ object ApiUtilities {
 
     @Provides
     @Singleton
-    fun provideChapterRepository(apiService: ApiInterface,): ChapterRepository {
+    fun provideChapterRepository(apiService: ApiInterface): ChapterRepository {
         return ChapterRepositoryImpl(apiService)
     }
 

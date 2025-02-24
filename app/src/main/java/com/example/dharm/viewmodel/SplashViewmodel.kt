@@ -16,6 +16,5 @@ class SplashViewmodel: ViewModel(){
             delay(2000)
             _isLoading.value = false
         }
-
     }
 }

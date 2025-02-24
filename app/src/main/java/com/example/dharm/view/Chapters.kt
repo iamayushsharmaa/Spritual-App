@@ -4,6 +4,7 @@ package com.example.dharm.view
 import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,11 +38,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dharm.R
 import com.example.dharm.ads.BannerAds
+import com.example.dharm.models.chapter.ChaptersItem
 import com.example.dharm.models.chapter.UiState
 import com.example.dharm.viewmodel.MainViewModel
 import com.example.foradsonly.ads.loadInterstitialAd
@@ -50,37 +53,19 @@ import com.example.foradsonly.ads.showInterstitialAds
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Chapters(navController: NavController, viewModel: MainViewModel){
+fun Chapters(
+    navController: NavController,
+    viewModel: MainViewModel = hiltViewModel()
+){
+    val chapters by viewModel.chaptersUiState.collectAsState()
 
-    val chapters by viewModel.chapters.collectAsState()
-    val uiState by viewModel.uiState.collectAsState()
-
+    val context = LocalContext.current
     Scaffold (
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Srimad Bhagvad Gita",
-                        fontSize = 29.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth(),
-                        fontWeight = FontWeight.ExtraBold,
-                    )
-                },
-                actions ={
-                    IconButton(onClick = { navController.navigate("Saved")}) {
-                        Icon(painter = painterResource(id = R.drawable.savefilled_icon), contentDescription = "Saved Verses")
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.background
-                )
-            )
-        }
+        modifier = Modifier.fillMaxSize()
     ) {
         Column (modifier = Modifier
             .fillMaxSize()
-            .padding(top = it.calculateTopPadding()),
+            .padding(it)
         ){
             ImageVerse(navController,viewModel)
 
@@ -93,7 +78,7 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
                 modifier = Modifier.padding(start = 20.dp, top = 25.dp)
             )
 
-            when (uiState) {
+            when (chapters) {
                 is UiState.Loading -> {
                     LazyColumn(
                         modifier = Modifier
@@ -109,26 +94,38 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
                     }
                 }
                 is UiState.Success -> {
+                    val allChapters = (chapters as UiState.Success).data
                     LazyColumn (
                         modifier = Modifier
                             .padding(12.dp)
                             .fillMaxSize()
                     ){
-                        items(chapters){ chapter->
+                        items(allChapters){ chapter->
                             ChapterList(
-                                chapter = chapter.name_translated,
-                                number = chapter.chapter_number,
-                                navController = navController,
-                                chapterSummary = chapter.chapter_summary,
-                                verseCount = chapter.verses_count,
-                                viewModel = viewModel
+                                chapter = chapter,
+                                onChapterClick = {
+                                    loadInterstitialAd(context)
+                                    showInterstitialAds(
+                                        context,
+                                        navController,
+                                        chapter.chapter_number,
+                                        chapter.name_translated,
+                                        chapter.chapter_summary,
+                                        chapter.verses_count
+                                    )
+                                }
                             )
-
                         }
                     }
                 }
                 is UiState.Error -> {
-                    Text(text = (uiState as UiState.Error).message)
+                    Text(
+                        text = "Failed to fetch chapters",
+                        modifier = Modifier.fillMaxWidth(),
+                        fontWeight = FontWeight.Normal,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }
@@ -137,15 +134,9 @@ fun Chapters(navController: NavController, viewModel: MainViewModel){
 
 @Composable
 fun ChapterList(
-    chapter: String,
-    number: Int,
-    navController: NavController,
-    chapterSummary: String,
-    verseCount: Int,
-    viewModel: MainViewModel
+    chapter: ChaptersItem,
+    onChapterClick: () -> Unit = {}
 ){
-    val context = LocalContext.current
-
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.secondary
@@ -158,15 +149,7 @@ fun ChapterList(
             .padding(8.dp)
             .height(70.dp)
             .clickable {
-                onChapterClick(
-                    number,
-                    chapter,
-                    navController,
-                    chapterSummary,
-                    verseCount,
-                    viewModel,
-                    context
-                )
+               onChapterClick()
             },
         shape = RoundedCornerShape(8.dp),
     ) {
@@ -176,7 +159,7 @@ fun ChapterList(
                 .padding(8.dp)
         ) {
             Text(
-                text = "Chapter $number : $chapter",
+                text = "Chapter ${chapter.chapter_number} : ${chapter.name_translated}",
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,
@@ -200,21 +183,3 @@ fun ChapterList(
     }
 }
 
-fun onChapterClick(
-    currentChapterNumber: Int,
-    currentChapter: String,
-    navController: NavController,
-    chapterSummary: String,
-    verseCount: Int,
-    viewModel: MainViewModel,
-    context: Context
-) {
-    loadInterstitialAd(context)
-    showInterstitialAds(context,navController,currentChapterNumber,currentChapter,chapterSummary,verseCount)
-}
-
-@Preview
-@Composable
-fun Okay() {
-    ChapterList("Chapter ",1,navController = rememberNavController(),"okay",13,viewModel = viewModel())
-}

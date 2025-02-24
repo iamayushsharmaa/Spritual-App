@@ -42,16 +42,15 @@ fun ShimmerListItem(
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(70.dp)
-                    .padding(10.dp)
+                    .fillMaxSize()
             ) {
                 Box(
                     modifier = Modifier
                         .padding(3.dp, 11.dp, 0.dp, 0.dp)
                         .height(20.dp)
                         .width(250.dp)
-                        .shimmerEffect()
+                        .background(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.secondary)
+                        .shimmerEffect(),
                 )
 
                 Spacer(modifier = Modifier.weight(1f))
@@ -60,6 +59,7 @@ fun ShimmerListItem(
                     modifier = Modifier
                         .padding(8.dp, 7.dp, 7.dp, 8.dp)
                         .size(40.dp)
+                        .background(shape = RoundedCornerShape(8.dp), color = MaterialTheme.colorScheme.secondary)
                         .shimmerEffect()
                 )
             }

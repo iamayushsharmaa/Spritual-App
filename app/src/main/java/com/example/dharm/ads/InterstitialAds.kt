@@ -45,7 +45,7 @@ fun addInterstitialCallbacks(
     context: Context,
     navController: NavController,
     currentChapterNumber: Int,
-    currentChapter: String,
+    chapterTitle: String,
     chapterSummary: String,
     verseCount: Int
 ) {
@@ -54,7 +54,7 @@ fun addInterstitialCallbacks(
             override fun onAdDismissedFullScreenContent() {
                 Log.d("AdDismissed", "Interstitial ad dismissed")
                 // Navigate to the next screen after the ad is dismissed
-                navController.navigate("Verse/$currentChapterNumber/$currentChapter/$chapterSummary/$verseCount")
+                navController.navigate("Verse/$currentChapterNumber/$chapterTitle/$chapterSummary/$verseCount")
                 interstitialAd = null
                 Log.d("AdDismissed", "Interstitial ad dismissed")
                 loadInterstitialAd(context) // Reload a new ad after dismissal
@@ -63,7 +63,7 @@ fun addInterstitialCallbacks(
             override fun onAdFailedToShowFullScreenContent(adError: AdError) {
                 // Navigate to the next screen if the ad fails to show
                 Log.d("AdShowError", "Failed to show interstitial ad: ${adError.message}")
-                navController.navigate("Verse/$currentChapterNumber/$currentChapter/$chapterSummary/$verseCount")
+                navController.navigate("Verse/$currentChapterNumber/$chapterTitle/$chapterSummary/$verseCount")
                 interstitialAd = null
             }
 
@@ -90,7 +90,7 @@ fun showInterstitialAds(
             context = context,
             navController = navController,
             currentChapterNumber = currentChapterNumber,
-            currentChapter = currentChapter,
+            chapterTitle = currentChapter,
             chapterSummary = chapterSummary,
             verseCount = verseCount
         )

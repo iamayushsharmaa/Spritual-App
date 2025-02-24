@@ -29,10 +29,11 @@ class ChapterRepositoryImpl @Inject constructor(
 
     override suspend fun getAllChapters(): Flow<Resource<List<ChaptersItem>>> = flow{
         try {
-        emit(Resource.Loading)
-        val chapters = apiService.getAllChapters()
+            emit(Resource.Loading)
+
+            val chapters = apiService.getAllChapters()
             emit(Resource.Success(chapters))
-    }catch(e : Exception) {
+        }catch(e : Exception) {
             emit(Resource.Error(e))
         }
     }

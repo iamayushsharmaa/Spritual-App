@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.material3.Scaffold
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -30,6 +31,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 class MainActivity : ComponentActivity() {
 
     private val viewmodel : SplashViewmodel by viewModels()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,8 +53,7 @@ class MainActivity : ComponentActivity() {
                         Home(navController)
                     }
                     composable("Chapters") {
-                        val viewModel = hiltViewModel<MainViewModel>()
-                        ChapterConnectivityStatus(navController,viewModel)
+                        ChapterConnectivityStatus(navController)
                     }
                     composable(
                         "Verse/{chapterNumber}/{chapterTitle}/{chapterSummary}/{verseCount}",
@@ -68,7 +69,7 @@ class MainActivity : ComponentActivity() {
                             val verseCount = backStackEntry.arguments?.getString("verseCount") ?: ""
 
                         if (chapterNumber != -1) {
-                            Verse(navController, chapterNumber, chapterTitle, chapterSummary, viewModel, verseCount)
+                            Verse(navController, chapterNumber, chapterTitle, chapterSummary, verseCount)
                         } else {
                             Log.e("verse", "Invalid chapter number: $chapterNumber")
                         }

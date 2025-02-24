@@ -58,13 +58,13 @@ fun VerseDetail(
     LaunchedEffect(verseNumber) {
         viewModel.fetchParticularVerse(chapterNumber!!,verseNumber!!)
     }
-    val verse by viewModel.verse.collectAsState()
-    val uiState by viewModel.uiState.collectAsState()
+    val verseState by viewModel.verseUiState.collectAsState()
 
-    val listOfTranslations = verse?.translations?.filter { it.language == "english" } ?: emptyList()
+    val particularVerse = (verseState as? UiState.Success)?.data
+    val listOfTranslations = particularVerse?.translations?.filter { it.language == "english" } ?: emptyList()
     val listOfTranslationSize = listOfTranslations.size
 
-    val listOfCommentary = verse?.commentaries?.filter { it.language == "english" } ?: emptyList()
+    val listOfCommentary = particularVerse?.commentaries?.filter { it.language == "english" } ?: emptyList()
 
 
     Scaffold (
@@ -93,7 +93,7 @@ fun VerseDetail(
                 .padding(top = it.calculateTopPadding())
         ) {
 
-            when (uiState) {
+            when (verseState) {
                 is UiState.Loading -> {
                    Box(
                        modifier = Modifier
@@ -105,6 +105,7 @@ fun VerseDetail(
                    }
                 }
                 is UiState.Success -> {
+                    val verse = (verseState as UiState.Success).data
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -158,7 +159,7 @@ fun VerseDetail(
                     BannerAds(modifier = Modifier)
                 }
                 is UiState.Error -> {
-                    Text(text = (uiState as UiState.Error).message)
+                    Text(text = "Failed to fetch verse")
                 }
             }
         }

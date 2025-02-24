@@ -43,16 +43,10 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.dharm.R
+import com.example.dharm.models.chapter.UiState
 import com.example.dharm.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
 import kotlin.random.Random
-
-
-@Preview
-@Composable
-fun Preview(){
-    Home(rememberNavController())
-}
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -61,19 +55,7 @@ fun Preview(){
 fun Home(navController:NavController, ){
 
     Scaffold (
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = "Hinduism",
-                        fontSize = 29.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.fillMaxWidth(),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            )
-        }
+       modifier = Modifier.fillMaxSize()
    ){
         Column (modifier = Modifier
             .fillMaxSize()
@@ -98,8 +80,9 @@ fun ImageVerse(navController: NavController,viewModel: MainViewModel){
         val verseNumber = Random.nextInt(1,21)
         viewModel.fetchParticularVerse(chapterNumber.value,verseNumber)
     }
-    val verse by viewModel.verse.collectAsState(initial = null)
-    val listOfTranslations = verse?.translations?.filter { it.language == "english" } ?: emptyList()
+    val verse by viewModel.verseUiState.collectAsState(initial = null)
+    val verseData = (verse as? UiState.Success)?.data
+    val listOfTranslations = verseData?.translations?.filter { it.language == "english" } ?: emptyList()
 
     Card (modifier = Modifier
         .width(400.dp)
